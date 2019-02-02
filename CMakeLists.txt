@@ -1,0 +1,171 @@
+#
+# Irrlicht 3D engine
+#
+cmake_minimum_required(VERSION 3.8)
+project(Irrlicht)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    
+# Irrlicht directories
+# -------------------------------------------------------------------------------------------------
+set(IRR_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../1.8.4-c8d681a2b2/")
+set(IRR_SRC_DIR "${IRR_ROOT_DIR}/source/Irrlicht")
+
+# Options
+# -------------------------------------------------------------------------------------------------
+set(DXSDK "")
+if(DEFINED ENV{DXSDK_DIR})
+    set(DXSDK "ENV{DXSDK_DIR}")
+endif()
+
+set(IRR_FAST_MATH 0 CACHE BOOL "Whether to enable fast maths (at the expense of precision)")
+set(IRR_SHARED_LIB 1 CACHE BOOL "Whether to generate shared libraries instead of static libraries")
+set(IRR_DIRECTX_SDK ${DXSDK} CACHE PATH "Path to the DirectX SDK (for DirectX 9, this folder should contain /Include, /Lib)")
+
+# Some helper functions
+# -------------------------------------------------------------------------------------------------
+function(glob_c_cpp_sources result folder)
+    file(GLOB res
+        "${folder}/*.c"
+        "${folder}/*.cpp"
+        "${folder}/*.h"
+        "${folder}/*.hpp"
+        "${folder}/*.rc")
+    set(${result} ${res} PARENT_SCOPE)
+endfunction()
+
+# Source files
+# -------------------------------------------------------------------------------------------------
+glob_c_cpp_sources(IRR_SRC_FILES ${IRR_SRC_DIR})
+glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE ${IRR_ROOT_DIR}/include)
+glob_c_cpp_sources(IRR_SRC_FILES_AESGLADMAN ${IRR_SRC_DIR}/aesGladman)
+glob_c_cpp_sources(IRR_SRC_FILES_LZMA ${IRR_SRC_DIR}/lzma)
+
+    
+# Group files
+# -------------------------------------------------------------------------------------------------
+source_group(Irrlicht\\engine           FILES ${IRR_SRC_FILES})
+source_group(Irrlicht\\interface        FILES ${IRR_SRC_FILES_INTERFACE})
+source_group(Irrlicht\\libs\\aesGladman FILES ${IRR_SRC_FILES_AESGLADMAN})
+source_group(Irrlicht\\libs\\lzma       FILES ${IRR_SRC_FILES_LZMA})
+
+# Library files
+# -------------------------------------------------------------------------------------------------
+find_package(ZLIB REQUIRED)
+find_package(PNG REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(BZIP2 REQUIRED)
+#find_package(LIBLZMA REQUIRED) # LIBLZMA does not export _LzmaDecode
+
+# Irrlicht target
+# -------------------------------------------------------------------------------------------------
+set(IRR_ALL_SRC_FILES
+    ${IRR_SRC_FILES}
+    ${IRR_SRC_FILES_INTERFACE}
+    ${IRR_SRC_FILES_AESGLADMAN}
+    ${IRR_SRC_FILES_LZMA}
+    )
+
+if(${IRR_SHARED_LIB})
+    add_library(Irrlicht SHARED ${IRR_ALL_SRC_FILES})
+else()
+    add_library(Irrlicht STATIC ${IRR_ALL_SRC_FILES})
+endif()
+
+target_link_libraries(Irrlicht PRIVATE 
+    ${ZLIB_LIBRARY} 
+    ${PNG_LIBRARY} 
+    ${JPEG_LIBRARY} 
+    ${BZIP2_LIBRARY}
+    )
+
+# Target properties (for compilation & export)
+# -------------------------------------------------------------------------------------------------
+target_include_directories(Irrlicht
+    PUBLIC ${IRR_ROOT_DIR}/include
+    PRIVATE ${IRR_SRC_DIR}
+    PRIVATE ${IRR_SRC_DIR}/aesGladman
+    PRIVATE ${BZIP2_INCLUDE_DIR}
+    PRIVATE ${JPEG_INCLUDE_DIR}
+    PRIVATE ${LIBPNG_INCLUDE_DIR}
+    PRIVATE ${IRR_SRC_DIR}/lzma
+    PRIVATE ${ZLIB_INCLUDE_DIR}
+    )
+
+if(NOT ${IRR_DIRECTX_SDK} STREQUAL "")
+    target_include_directories(Irrlicht PRIVATE ${IRR_DIRECTX_SDK}/Include)
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+        set(DX_LIBS ${IRR_DIRECTX_SDK}/Lib/x86)
+    else()
+        set(DX_LIBS ${IRR_DIRECTX_SDK}/Lib/x64)
+    endif()
+    target_link_libraries(Irrlicht
+        PRIVATE ${DX_LIBS}/d3dx9.lib
+        PRIVATE ${DX_LIBS}/dinput8.lib
+        PRIVATE ${DX_LIBS}/dxguid.lib)
+else()
+    target_compile_definitions(Irrlicht PRIVATE NO_IRR_COMPILE_WITH_DIRECT3D_9_)
+endif()
+if(NOT ${IRR_SHARED_LIB})
+    target_compile_definitions(Irrlicht PUBLIC _IRR_STATIC_LIB_)
+endif()
+    
+# Per platform config
+# -------------------------------------------------------------------------------------------------
+    
+# Export symbols
+target_compile_definitions(Irrlicht PRIVATE IRRLICHT_EXPORTS)
+    
+
+if(WIN32)
+    # Import the symbols of bzip2
+    target_compile_definitions(Irrlicht PRIVATE BZ_IMPORT)
+
+    # Disable the ton of warnings from standard library
+    target_compile_definitions(Irrlicht PRIVATE _CRT_SECURE_NO_WARNINGS)
+    
+    # Multi processor compilation
+    target_compile_options(Irrlicht PRIVATE /MP)
+    
+    # Fast math options
+    if(${IRR_FAST_MATH})
+        target_compile_options(Irrlicht PRIVATE /fp:fast)
+        message("Fast Math Enabled")
+        # SSE2 is automatically activated on x64
+        if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+            target_compile_options(Irrlicht PRIVATE /arch:SSE2)
+        endif()
+    endif()
+    
+elseif(UNIX)
+    # Standard mode
+    target_compile_options(Irrlicht
+        PRIVATE -Wall
+        PRIVATE -pipe
+        PRIVATE -fno-exceptions
+        PRIVATE -fno-strict-aliasing)
+    
+    # Disable RTTI on C++ files only (no sense for C files)
+    set_source_files_properties(${IRR_SRC_FILES} ${IRR_SRC_FILES_AESGLADMAN}
+        PROPERTIES COMPILE_FLAGS -fno-rtti)
+    
+    # Debug macro
+    target_compile_options(Irrlicht PRIVATE $<$<CONFIG:Debug>:-D_DEBUG>)
+    
+    # X11 and OpenGL
+    target_link_libraries(Irrlicht
+        PRIVATE X11
+        PRIVATE GL
+        PRIVATE Xxf86vm)
+endif()
+
+
+install(
+    TARGETS Irrlicht
+    EXPORT Irrlicht
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+install(DIRECTORY "${IRR_ROOT_DIR}include/" DESTINATION include CONFIGURATIONS Release)
