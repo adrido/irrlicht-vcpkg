@@ -12,7 +12,7 @@ Usage:
 
 The Irrlicht sourcecode an the dependencies zlib, libpng, libjpeg, and bzip2 will then automatically downloaded, built and installed to the correct folder.
 
-It is also possible to use vcpkg install irrlicht[fast-fpu] to build with fast math.
+It is also possible to use `vcpkg install irrlicht[fast-fpu]` to build with fast math. If you need the Tools FontTool, GUIEditor, MeshConverter or FileToHeader, use `vcpkg install irrlicht[tools]`. The combination of both `irrlicht[fast-fpu,tools]` is possible too.
 
 If this is tested well and works fine, ill consider creating a Pull Request to https://github.com/Microsoft/vcpkg/ so you dont need the steps 1 & 2 
 

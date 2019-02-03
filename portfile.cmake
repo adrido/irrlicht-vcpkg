@@ -33,6 +33,12 @@ set(FAST_MATH FALSE)
 if("fast-fpu" IN_LIST FEATURES)
     set(FAST_MATH TRUE)
 endif()
+
+set(BUILD_TOOLS FALSE)
+if("tools" IN_LIST FEATURES)
+    set(BUILD_TOOLS TRUE)
+endif()
+
 set(SHARED_LIB TRUE)
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     set(SHARED_LIB FALSE)
@@ -44,11 +50,16 @@ vcpkg_configure_cmake(
     OPTIONS 
         -DIRR_SHARED_LIB=${SHARED_LIB} 
         -DIRR_FAST_MATH=${FAST_MATH}
+        -DIRR_BUILD_TOOLS=${BUILD_TOOLS}
     # OPTIONS_RELEASE -DOPTIMIZE=1
     # OPTIONS_DEBUG -DDEBUGGABLE=1
 )
 
 vcpkg_install_cmake()
+
+if(BUILD_TOOLS)
+    vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/irrlicht/)
+endif()
 
 # Handle copyright
 file(WRITE ${CURRENT_PACKAGES_DIR}/share/irrlicht/copyright "

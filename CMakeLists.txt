@@ -21,6 +21,7 @@ endif()
 set(IRR_FAST_MATH 0 CACHE BOOL "Whether to enable fast maths (at the expense of precision)")
 set(IRR_SHARED_LIB 1 CACHE BOOL "Whether to generate shared libraries instead of static libraries")
 set(IRR_DIRECTX_SDK ${DXSDK} CACHE PATH "Path to the DirectX SDK (for DirectX 9, this folder should contain /Include, /Lib)")
+set(IRR_BUILD_TOOLS 0 CACHE BOOL "Whether to generate the tools")
 
 # Some helper functions
 # -------------------------------------------------------------------------------------------------
@@ -41,6 +42,10 @@ glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE ${IRR_ROOT_DIR}/include)
 glob_c_cpp_sources(IRR_SRC_FILES_AESGLADMAN ${IRR_SRC_DIR}/aesGladman)
 glob_c_cpp_sources(IRR_SRC_FILES_LZMA ${IRR_SRC_DIR}/lzma)
 
+glob_c_cpp_sources(IRR_TOOL_FILES_FILE_TO_HEADER    ${IRR_ROOT_DIR}/tools/FileToHeader/)
+glob_c_cpp_sources(IRR_TOOL_FILES_GUI_EDITOR        ${IRR_ROOT_DIR}/tools/GUIEditor/)
+glob_c_cpp_sources(IRR_TOOL_FILES_FONT_TOOL         ${IRR_ROOT_DIR}/tools/IrrFontTool/newFontTool/)
+glob_c_cpp_sources(IRR_TOOL_FILES_MESH_CONVERTER    ${IRR_ROOT_DIR}/tools/MeshConverter/)
     
 # Group files
 # -------------------------------------------------------------------------------------------------
@@ -78,6 +83,16 @@ target_link_libraries(Irrlicht PRIVATE
     ${JPEG_LIBRARY} 
     ${BZIP2_LIBRARY}
     )
+
+if(IRR_BUILD_TOOLS)
+    add_executable(FileToHeader         ${IRR_TOOL_FILES_FILE_TO_HEADER})
+    add_executable(GUIEditor            ${IRR_TOOL_FILES_GUI_EDITOR})
+    target_link_libraries(GUIEditor     Irrlicht)
+    add_executable(FontTool             ${IRR_TOOL_FILES_FONT_TOOL})
+    target_link_libraries(FontTool      Irrlicht)
+    add_executable(MeshConverter        ${IRR_TOOL_FILES_MESH_CONVERTER})
+    target_link_libraries(MeshConverter Irrlicht)
+endif()
 
 # Target properties (for compilation & export)
 # -------------------------------------------------------------------------------------------------
@@ -159,7 +174,8 @@ elseif(UNIX)
         PRIVATE Xxf86vm)
 endif()
 
-
+# Installation
+# -------------------------------------------------------------------------------------------------
 install(
     TARGETS Irrlicht
     EXPORT Irrlicht
@@ -167,5 +183,12 @@ install(
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+if(IRR_BUILD_TOOLS)
+    install(
+        TARGETS FileToHeader GUIEditor FontTool MeshConverter 
+        RUNTIME DESTINATION tools/irrlicht/
+        CONFIGURATIONS Release
+    )
+endif()
 
 install(DIRECTORY "${IRR_ROOT_DIR}include/" DESTINATION include CONFIGURATIONS Release)
