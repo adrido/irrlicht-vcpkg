@@ -11,16 +11,16 @@
 #
 
 include(vcpkg_common_functions)
-set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/irrlicht)
+
 vcpkg_download_distfile(ARCHIVE
     URLS "https://downloads.sourceforge.net/project/irrlicht/Irrlicht%20SDK/1.8/1.8.4/irrlicht-1.8.4.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Firrlicht%2Ffiles%2FIrrlicht%2520SDK%2F1.8%2F1.8.4%2Firrlicht-1.8.4.zip%2Fdownload%3Fuse_mirror%3Dautoselect&ts=1548986584&use_mirror=autoselect"
     FILENAME "irrlicht-1.8.4.zip"
     SHA512 de69ddd2c6bc80a1b27b9a620e3697b1baa552f24c7d624076d471f3aecd9b15f71dce3b640811e6ece20f49b57688d428e3503936a7926b3e3b0cc696af98d1
 )
 vcpkg_extract_source_archive_ex(
-    OUT_SOURCE_PATH ${SOURCE_PATH}
+    OUT_SOURCE_PATH SOURCE_PATH
     ARCHIVE ${ARCHIVE}
-    REF 1.8.4
+    REF "1.8.4"
     # [NO_REMOVE_ONE_LEVEL]
     # [WORKING_DIRECTORY <${CURRENT_BUILDTREES_DIR}/src>]
     # [PATCHES <a.patch>...]

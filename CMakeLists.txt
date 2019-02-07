@@ -8,8 +8,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     
 # Irrlicht directories
 # -------------------------------------------------------------------------------------------------
-set(IRR_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../1.8.4-c8d681a2b2/")
-set(IRR_SRC_DIR "${IRR_ROOT_DIR}/source/Irrlicht")
+set(IRR_ROOT_DIR "")
+set(IRR_SRC_DIR "source/Irrlicht")
+set(IRR_INC_DIR "include")
 
 # Options
 # -------------------------------------------------------------------------------------------------
@@ -96,8 +97,9 @@ endif()
 
 # Target properties (for compilation & export)
 # -------------------------------------------------------------------------------------------------
-target_include_directories(Irrlicht
-    PUBLIC ${IRR_ROOT_DIR}/include
+target_include_directories(Irrlicht PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${IRR_INC_DIR}>
+    $<INSTALL_INTERFACE:include>
     PRIVATE ${IRR_SRC_DIR}
     PRIVATE ${IRR_SRC_DIR}/aesGladman
     PRIVATE ${BZIP2_INCLUDE_DIR}
@@ -191,4 +193,4 @@ if(IRR_BUILD_TOOLS)
     )
 endif()
 
-install(DIRECTORY "${IRR_ROOT_DIR}include/" DESTINATION include CONFIGURATIONS Release)
+install(DIRECTORY ${IRR_INC_DIR} DESTINATION "include" CONFIGURATIONS Release)
