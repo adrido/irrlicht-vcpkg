@@ -112,8 +112,8 @@ target_include_directories(Irrlicht
 # but it is necesarry to build and export a package. 
 # See: https://cmake.org/cmake/help/v3.8/command/target_include_directories.html
 target_include_directories(Irrlicht PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>  # <prefix>/include
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/irrlicht>  # <prefix>/include/irrlicht
 )
 
 if(NOT ${IRR_DIRECTX_SDK} STREQUAL "")
@@ -192,7 +192,7 @@ install(
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
-install(FILES ${IRR_SRC_FILES_INTERFACE} DESTINATION "include" CONFIGURATIONS Release)
+install(FILES ${IRR_SRC_FILES_INTERFACE} DESTINATION "include/irrlicht" CONFIGURATIONS Release)
 
 if(IRR_BUILD_TOOLS)
     install(
