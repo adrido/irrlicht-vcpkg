@@ -39,7 +39,7 @@ endfunction()
 # Source files
 # -------------------------------------------------------------------------------------------------
 glob_c_cpp_sources(IRR_SRC_FILES ${IRR_SRC_DIR})
-glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE ${IRR_ROOT_DIR}/include)
+glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE ${IRR_INC_DIR})
 glob_c_cpp_sources(IRR_SRC_FILES_AESGLADMAN ${IRR_SRC_DIR}/aesGladman)
 glob_c_cpp_sources(IRR_SRC_FILES_LZMA ${IRR_SRC_DIR}/lzma)
 
@@ -97,9 +97,8 @@ endif()
 
 # Target properties (for compilation & export)
 # -------------------------------------------------------------------------------------------------
-target_include_directories(Irrlicht PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${IRR_INC_DIR}>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(Irrlicht
+#    PUBLIC ${IRR_INC_DIR}
     PRIVATE ${IRR_SRC_DIR}
     PRIVATE ${IRR_SRC_DIR}/aesGladman
     PRIVATE ${BZIP2_INCLUDE_DIR}
@@ -108,6 +107,14 @@ target_include_directories(Irrlicht PUBLIC
     PRIVATE ${IRR_SRC_DIR}/lzma
     PRIVATE ${ZLIB_INCLUDE_DIR}
     )
+
+# I dont realy understand why this is necesary or what it is doing,
+# but it is necesarry to build and export a package. 
+# See: https://cmake.org/cmake/help/v3.8/command/target_include_directories.html
+target_include_directories(Irrlicht PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>  # <prefix>/include
+)
 
 if(NOT ${IRR_DIRECTX_SDK} STREQUAL "")
     target_include_directories(Irrlicht PRIVATE ${IRR_DIRECTX_SDK}/Include)
@@ -185,6 +192,8 @@ install(
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+install(FILES ${IRR_SRC_FILES_INTERFACE} DESTINATION "include" CONFIGURATIONS Release)
+
 if(IRR_BUILD_TOOLS)
     install(
         TARGETS FileToHeader GUIEditor FontTool MeshConverter 
@@ -193,4 +202,4 @@ if(IRR_BUILD_TOOLS)
     )
 endif()
 
-install(DIRECTORY ${IRR_INC_DIR} DESTINATION "include" CONFIGURATIONS Release)
+install(EXPORT Irrlicht FILE irrlicht-targets.cmake DESTINATION share/irrlicht)

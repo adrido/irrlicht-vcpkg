@@ -57,10 +57,13 @@ vcpkg_configure_cmake(
 
 vcpkg_install_cmake()
 
+vcpkg_fixup_cmake_targets()
+
 if(BUILD_TOOLS)
     vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/irrlicht/)
 endif()
 
+file(WRITE ${CURRENT_PACKAGES_DIR}/share/irrlicht/irrlicht-config.cmake "include(\${CMAKE_CURRENT_LIST_DIR}/irrlicht-targets.cmake)")
 # Handle copyright
 file(WRITE ${CURRENT_PACKAGES_DIR}/share/irrlicht/copyright "
 The Irrlicht Engine License
@@ -87,4 +90,4 @@ freely, subject to the following restrictions:
 vcpkg_copy_pdbs()
 
 # Post-build test for cmake libraries
-# vcpkg_test_cmake(PACKAGE_NAME irrlicht)
+vcpkg_test_cmake(PACKAGE_NAME irrlicht)
