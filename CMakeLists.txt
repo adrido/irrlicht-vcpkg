@@ -38,10 +38,10 @@ endfunction()
 
 # Source files
 # -------------------------------------------------------------------------------------------------
-glob_c_cpp_sources(IRR_SRC_FILES ${IRR_SRC_DIR})
-glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE ${IRR_INC_DIR})
-glob_c_cpp_sources(IRR_SRC_FILES_AESGLADMAN ${IRR_SRC_DIR}/aesGladman)
-glob_c_cpp_sources(IRR_SRC_FILES_LZMA ${IRR_SRC_DIR}/lzma)
+glob_c_cpp_sources(IRR_SRC_FILES                    ${IRR_SRC_DIR})
+glob_c_cpp_sources(IRR_SRC_FILES_INTERFACE          ${IRR_INC_DIR})
+glob_c_cpp_sources(IRR_SRC_FILES_AESGLADMAN         ${IRR_SRC_DIR}/aesGladman)
+glob_c_cpp_sources(IRR_SRC_FILES_LZMA               ${IRR_SRC_DIR}/lzma)
 
 glob_c_cpp_sources(IRR_TOOL_FILES_FILE_TO_HEADER    ${IRR_ROOT_DIR}/tools/FileToHeader/)
 glob_c_cpp_sources(IRR_TOOL_FILES_GUI_EDITOR        ${IRR_ROOT_DIR}/tools/GUIEditor/)
@@ -87,10 +87,13 @@ target_link_libraries(Irrlicht PRIVATE
 
 if(IRR_BUILD_TOOLS)
     add_executable(FileToHeader         ${IRR_TOOL_FILES_FILE_TO_HEADER})
+
     add_executable(GUIEditor            ${IRR_TOOL_FILES_GUI_EDITOR})
     target_link_libraries(GUIEditor     Irrlicht)
+
     add_executable(FontTool             ${IRR_TOOL_FILES_FONT_TOOL})
     target_link_libraries(FontTool      Irrlicht)
+
     add_executable(MeshConverter        ${IRR_TOOL_FILES_MESH_CONVERTER})
     target_link_libraries(MeshConverter Irrlicht)
 endif()
@@ -98,7 +101,6 @@ endif()
 # Target properties (for compilation & export)
 # -------------------------------------------------------------------------------------------------
 target_include_directories(Irrlicht
-#    PUBLIC ${IRR_INC_DIR}
     PRIVATE ${IRR_SRC_DIR}
     PRIVATE ${IRR_SRC_DIR}/aesGladman
     PRIVATE ${BZIP2_INCLUDE_DIR}
@@ -130,16 +132,16 @@ if(NOT ${IRR_DIRECTX_SDK} STREQUAL "")
 else()
     target_compile_definitions(Irrlicht PRIVATE NO_IRR_COMPILE_WITH_DIRECT3D_9_)
 endif()
+
 if(NOT ${IRR_SHARED_LIB})
     target_compile_definitions(Irrlicht PUBLIC _IRR_STATIC_LIB_)
 endif()
-    
+
 # Per platform config
 # -------------------------------------------------------------------------------------------------
-    
+
 # Export symbols
 target_compile_definitions(Irrlicht PRIVATE IRRLICHT_EXPORTS)
-    
 
 if(WIN32)
     # Import the symbols of bzip2
@@ -147,10 +149,10 @@ if(WIN32)
 
     # Disable the ton of warnings from standard library
     target_compile_definitions(Irrlicht PRIVATE _CRT_SECURE_NO_WARNINGS)
-    
+
     # Multi processor compilation
     target_compile_options(Irrlicht PRIVATE /MP)
-    
+
     # Fast math options
     if(${IRR_FAST_MATH})
         target_compile_options(Irrlicht PRIVATE /fp:fast)
@@ -160,7 +162,7 @@ if(WIN32)
             target_compile_options(Irrlicht PRIVATE /arch:SSE2)
         endif()
     endif()
-    
+
 elseif(UNIX)
     # Standard mode
     target_compile_options(Irrlicht
@@ -172,10 +174,10 @@ elseif(UNIX)
     # Disable RTTI on C++ files only (no sense for C files)
     set_source_files_properties(${IRR_SRC_FILES} ${IRR_SRC_FILES_AESGLADMAN}
         PROPERTIES COMPILE_FLAGS -fno-rtti)
-    
+
     # Debug macro
     target_compile_options(Irrlicht PRIVATE $<$<CONFIG:Debug>:-D_DEBUG>)
-    
+
     # X11 and OpenGL
     target_link_libraries(Irrlicht
         PRIVATE X11
@@ -192,6 +194,7 @@ install(
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
 install(FILES ${IRR_SRC_FILES_INTERFACE} DESTINATION "include/irrlicht" CONFIGURATIONS Release)
 
 if(IRR_BUILD_TOOLS)
