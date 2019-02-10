@@ -60,7 +60,7 @@ source_group(Irrlicht\\libs\\lzma       FILES ${IRR_SRC_FILES_LZMA})
 find_package(ZLIB REQUIRED)
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
-find_package(BZIP2 REQUIRED)
+find_package(BZip2 REQUIRED)
 #find_package(LIBLZMA REQUIRED) # LIBLZMA does not export _LzmaDecode
 
 # Irrlicht target
