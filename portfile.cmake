@@ -46,7 +46,7 @@ endif()
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
-    #PREFER_NINJA # Disable this option if project cannot be built with Ninja
+    PREFER_NINJA # Disable this option if project cannot be built with Ninja
     OPTIONS 
         -DIRR_SHARED_LIB=${SHARED_LIB} 
         -DIRR_FAST_MATH=${FAST_MATH}
